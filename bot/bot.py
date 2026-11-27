@@ -22,7 +22,10 @@ import os
 import pathlib
 import sys
 
+import io
+
 import requests
+from PIL import Image
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 QUEUE = ROOT / "queue"
@@ -63,11 +66,22 @@ def tg(method, files=None, **params):
     for k, v in list(params.items()):
         if isinstance(v, (dict, list)):
             params[k] = json.dumps(v, ensure_ascii=False)
-    r = requests.post(f"{API}/{method}", data=params, files=files, timeout=60)
+    r = requests.post(f"{API}/{method}", data=params, files=files, timeout=(20, 300))
     data = r.json()
     if not data.get("ok"):
         raise RuntimeError(f"{method}: {data.get('description')}")
     return data["result"]
+
+
+def media_file(path):
+    """PNG rasmni yengil JPEG'ga aylantiradi (Telegram'ga tez yuklanishi uchun)."""
+    path = pathlib.Path(path)
+    if path.suffix.lower() == ".png":
+        buf = io.BytesIO()
+        Image.open(path).convert("RGB").save(buf, "JPEG", quality=90)
+        buf.seek(0)
+        return (path.stem + ".jpg", buf)
+    return (path.name, open(path, "rb"))
 
 
 def admin_id(state):
@@ -94,9 +108,8 @@ def send_post(chat_id, post, folder, caption_extra="", reply_markup=None):
         return msg["message_id"]
 
     if kind == "photo":
-        with open(media[0], "rb") as f:
-            msg = tg("sendPhoto", files={"photo": f}, chat_id=chat_id, caption=text[:1024],
-                     parse_mode="HTML", **extra)
+        msg = tg("sendPhoto", files={"photo": media_file(media[0])}, chat_id=chat_id,
+                 caption=text[:1024], parse_mode="HTML", **extra)
         if len(text) > 1024:
             msg = tg("sendMessage", chat_id=chat_id, text=text[1024:], parse_mode="HTML")
         return msg["message_id"]
@@ -111,7 +124,7 @@ def send_post(chat_id, post, folder, caption_extra="", reply_markup=None):
         files, group = {}, []
         for i, m in enumerate(media[:10]):
             key = f"f{i}"
-            files[key] = open(m, "rb")
+            files[key] = media_file(m)
             item = {"type": "video" if m.suffix == ".mp4" else "photo", "media": f"attach://{key}"}
             if i == 0:
                 item["caption"] = text[:1024]
@@ -120,7 +133,7 @@ def send_post(chat_id, post, folder, caption_extra="", reply_markup=None):
         try:
             msgs = tg("sendMediaGroup", files=files, chat_id=chat_id, media=group)
         finally:
-            for f in files.values():
+            for _, f in files.values():
                 f.close()
         last = msgs[-1]["message_id"]
         if reply_markup:  # albomga tugma biriktirib bo'lmaydi — alohida xabar
