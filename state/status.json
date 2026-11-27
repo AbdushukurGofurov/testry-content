@@ -4,10 +4,10 @@
   "posts": {
     "2026-11-28_0900_tg": {
       "status": "review",
-      "version": 1,
+      "version": 2,
       "scheduled_at": "2026-11-28T09:00",
       "platform": "telegram",
-      "review_message_id": 9,
+      "review_message_id": 17,
       "feedback": []
     },
     "2026-11-28_1900_tg": {
@@ -20,10 +20,10 @@
     },
     "2026-11-28_1930_ig": {
       "status": "review",
-      "version": 1,
+      "version": 2,
       "scheduled_at": "2026-11-28T19:30",
       "platform": "instagram",
-      "review_message_id": 16,
+      "review_message_id": 25,
       "feedback": []
     }
   }
