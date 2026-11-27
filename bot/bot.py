@@ -73,6 +73,14 @@ def tg(method, files=None, **params):
     return data["result"]
 
 
+def answer_cb(cq_id, text):
+    """Tugma bosilganiga javob. Kechikkan bo'lsa Telegram rad etadi — bu muhim emas."""
+    try:
+        tg("answerCallbackQuery", callback_query_id=cq_id, text=text)
+    except Exception:  # noqa: BLE001
+        pass
+
+
 def media_file(path):
     """PNG rasmni yengil JPEG'ga aylantiradi (Telegram'ga tez yuklanishi uchun)."""
     path = pathlib.Path(path)
@@ -165,19 +173,19 @@ def handle_updates(state):
         if "callback_query" in u:
             cq = u["callback_query"]
             if str(cq["from"]["id"]) != str(admin):
-                tg("answerCallbackQuery", callback_query_id=cq["id"], text="Ruxsat yo'q")
+                answer_cb(cq["id"], "Ruxsat yo'q")
                 continue
             action, post_id = cq["data"].split(":", 1)
             info = state["posts"].setdefault(post_id, {})
             if action == "ok":
                 info["status"] = "approved"
                 info["approved_at"] = now().isoformat(timespec="minutes")
-                tg("answerCallbackQuery", callback_query_id=cq["id"], text="Tasdiqlandi ✅")
+                answer_cb(cq["id"], "Tasdiqlandi ✅")
                 tg("sendMessage", chat_id=admin,
                    text=f"✅ Tasdiqlandi: {post_id}\nBelgilangan vaqtda chiqadi: {info.get('scheduled_at', '')}")
             else:
                 info["status"] = "rejected"
-                tg("answerCallbackQuery", callback_query_id=cq["id"], text="Rad etildi")
+                answer_cb(cq["id"], "Rad etildi")
                 m = tg("sendMessage", chat_id=admin,
                        text=f"❌ Rad etildi: {post_id}\nNimani o'zgartiray? Shu xabarga javob (reply) qilib yozing.",
                        reply_markup={"force_reply": True})
@@ -290,10 +298,14 @@ def main():
         print("TG_BOT_TOKEN topilmadi — GitHub Secrets'ga qo'shing.")
         sys.exit(0)
     state = load_state()
-    handle_updates(state)
-    send_new_for_review(state)
-    publish_due(state)
-    save_state(state)
+    try:
+        for step in (handle_updates, send_new_for_review, publish_due):
+            try:
+                step(state)
+            except Exception as e:  # noqa: BLE001
+                print(f"{step.__name__}: {e}")
+    finally:
+        save_state(state)
 
 
 if __name__ == "__main__":
