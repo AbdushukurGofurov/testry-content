@@ -245,7 +245,7 @@ def send_new_for_review(state):
 def publish_due(state):
     admin = admin_id(state)
     for post_id, info in state["posts"].items():
-        if info.get("status") != "approved":
+        if info.get("status") not in ("approved", "waiting_instagram"):
             continue
         when = dt.datetime.fromisoformat(info["scheduled_at"]).replace(tzinfo=TZ)
         if when > now():
