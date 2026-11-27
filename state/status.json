@@ -4,26 +4,26 @@
   "posts": {
     "2026-11-28_0900_tg": {
       "status": "review",
-      "version": 2,
+      "version": 3,
       "scheduled_at": "2026-11-28T09:00",
       "platform": "telegram",
-      "review_message_id": 17,
+      "review_message_id": 27,
       "feedback": []
     },
     "2026-11-28_1900_tg": {
       "status": "review",
-      "version": 1,
+      "version": 2,
       "scheduled_at": "2026-11-28T19:00",
       "platform": "telegram",
-      "review_message_id": 7,
+      "review_message_id": 30,
       "feedback": []
     },
     "2026-11-28_1930_ig": {
       "status": "review",
-      "version": 2,
+      "version": 3,
       "scheduled_at": "2026-11-28T19:30",
       "platform": "instagram",
-      "review_message_id": 25,
+      "review_message_id": 38,
       "feedback": []
     }
   }
