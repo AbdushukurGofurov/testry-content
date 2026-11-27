@@ -6,9 +6,12 @@ Barcha matnlar o'zbek tilida (lotin), "siz" bilan.
 
 ## Kunlik ish (har kuni avtomatik vazifa shuni bajaradi)
 
-1. `state/status.json` ni o'qing. `status: "rejected"` bo'lgan va `feedback` izohi bor postlarni
-   izoh bo'yicha qayta tayyorlang: o'sha papkadagi fayllarni yangilang va `post.json` dagi
-   `version` ni 1 ga oshiring. Izohsiz rad etilganlarga tegmang.
+1. `state/status.json` ni o'qing. `status: "needs_rework"` bo'lgan postlarni qayta tayyorlang.
+   `feedback` — ro'yxat: `{"part": "matn"|"rasm"|"mavzu"|"hammasi", "text": "...izoh..."}`.
+   Faqat ko'rsatilgan qismni o'zgartiring (`matn` → faqat matn/caption; `rasm` → faqat rasm/dizayn;
+   `mavzu` yoki `hammasi` → postni yangidan yozing), qolganini saqlang. Barcha oldingi izohlarni
+   hisobga oling. `post.json` dagi `version` ni 1 ga oshiring — bot yangi variantni o'zi yuboradi.
+   `rejected` (izoh hali yozilmagan) postlarga tegmang.
 2. `plan/` dagi CSV rejadan **ertangi kun** (Toshkent vaqti, UTC+5) qatorlarini oling.
    Har bir qator uchun `queue/<YYYY-MM-DD>_<HHMM>_<tg|ig>/` papkasini yarating.
    Papka allaqachon bo'lsa — tegmang (u tayyor yoki tasdiqlangan).
@@ -49,6 +52,11 @@ Hech qachon qayta chizilmaydi, rangi o'zgartirilmaydi.
 **Video (Reels / Telegram video):** 1080×1920, 15–30 s. Hozircha: 3–5 ta `size: "ig"` slayd
 chizib, ffmpeg bilan har biriga 4–6 s, yumshoq zoom va o'tish bilan mp4 qiling
 (`-c:v libx264 -preset veryfast -crf 20 -pix_fmt yuv420p`). Ovoz kerak emas.
+
+## Birinchi postlar: bot tanishuvi (28-noyabr – 30-noyabr)
+Ishga tushirish davrida asosiy urg'u — **@testryuz_bot** ni tanishtirish: u nima, qanday ishlaydi
+(botni oching → 30 ta savolga javob bering → natija), natijada nima beradi. Har bir postda botga
+havola bo'lsin. Keyingi kunlarda ham haftada kamida 2 marta botga chaqiruv bo'lsin.
 
 ## Kontent standarti (qisqa)
 

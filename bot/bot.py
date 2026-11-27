@@ -40,7 +40,8 @@ TZ = dt.timezone(dt.timedelta(hours=5))  # Asia/Tashkent
 STATUS_UZ = {
     "review": "Tasdiqlashda",
     "approved": "Tasdiqlandi",
-    "rejected": "Rad etildi",
+    "rejected": "Rad etildi (izoh kutilmoqda)",
+    "needs_rework": "Qayta tayyorlanmoqda",
     "published": "Chop etildi",
     "waiting_instagram": "Instagram ulanishini kutmoqda",
     "error": "Xato",
@@ -175,21 +176,41 @@ def handle_updates(state):
             if str(cq["from"]["id"]) != str(admin):
                 answer_cb(cq["id"], "Ruxsat yo'q")
                 continue
-            action, post_id = cq["data"].split(":", 1)
+            parts = cq["data"].split(":")
+            action, post_id = parts[0], parts[-1]
             info = state["posts"].setdefault(post_id, {})
             if action == "ok":
                 info["status"] = "approved"
                 info["approved_at"] = now().isoformat(timespec="minutes")
                 answer_cb(cq["id"], "Tasdiqlandi ✅")
+                when = info.get("scheduled_at", "")
+                late = when and dt.datetime.fromisoformat(when).replace(tzinfo=TZ) <= now()
                 tg("sendMessage", chat_id=admin,
-                   text=f"✅ Tasdiqlandi: {post_id}\nBelgilangan vaqtda chiqadi: {info.get('scheduled_at', '')}")
-            else:
+                   text=f"✅ Tasdiqlandi: {post_id}\n" + ("Vaqti o'tgan — hozir chiqadi." if late
+                                                          else f"Belgilangan vaqtda chiqadi: {when.replace('T', ' ')}"))
+            elif action == "no":
                 info["status"] = "rejected"
                 answer_cb(cq["id"], "Rad etildi")
+                tg("sendMessage", chat_id=admin,
+                   text=f"❌ {post_id}\nNimasi yoqmadi? Tanlang:",
+                   reply_markup={"inline_keyboard": [
+                       [{"text": "📝 Matni", "callback_data": f"p:matn:{post_id}"},
+                        {"text": "🖼 Rasmi / dizayni", "callback_data": f"p:rasm:{post_id}"}],
+                       [{"text": "🎯 Mavzusi", "callback_data": f"p:mavzu:{post_id}"},
+                        {"text": "🔁 Hammasi", "callback_data": f"p:hammasi:{post_id}"}]]})
+            elif action == "p":
+                part = parts[1]
+                info["reject_part"] = part
+                answer_cb(cq["id"], "Tushunarli")
+                hint = {"matn": "qaysi gap yoki ohang yoqmadi, nima qo'shilsin/olib tashlansin",
+                        "rasm": "rang, poza, yozuv, joylashuv — nimasi o'zgarsin",
+                        "mavzu": "qaysi mavzu yoki burchak kerak",
+                        "hammasi": "postni qanday ko'rmoqchisiz"}.get(part, "")
                 m = tg("sendMessage", chat_id=admin,
-                       text=f"❌ Rad etildi: {post_id}\nNimani o'zgartiray? Shu xabarga javob (reply) qilib yozing.",
+                       text=f"Aniq nima o'zgarsin? ({hint})\nShu xabarga javob qilib yozing.",
                        reply_markup={"force_reply": True})
                 info["feedback_prompt_id"] = m["message_id"]
+                state["awaiting_feedback"] = post_id
             continue
 
         msg = u.get("message")
@@ -212,18 +233,25 @@ def handle_updates(state):
         if str(chat_id) != str(admin):
             continue
 
-        # Rad etilgan postga izoh (reply orqali)
+        # Rad etilgan postga izoh (reply orqali yoki oxirgi so'ralgan postga)
         reply_to = (msg.get("reply_to_message") or {}).get("message_id")
         target = None
         for pid, info in state["posts"].items():
             if reply_to and reply_to in (info.get("feedback_prompt_id"), info.get("review_message_id")):
                 target = pid
-        if target:
-            state["posts"][target].setdefault("feedback", []).append(text)
-            tg("sendMessage", chat_id=chat_id,
-               text=f"📝 Izoh saqlandi ({target}). Keyingi tayyorlashda hisobga olaman.")
-        elif text == "/holat":
+        if not target and not text.startswith("/"):
+            target = state.get("awaiting_feedback")
+        if text == "/holat":
             send_status(state, chat_id)
+        elif target:
+            info = state["posts"][target]
+            info.setdefault("feedback", []).append(
+                {"part": info.get("reject_part", "hammasi"), "text": text, "at": now().isoformat(timespec="minutes")})
+            info["status"] = "needs_rework"
+            state["awaiting_feedback"] = None
+            tg("sendMessage", chat_id=chat_id,
+               text=f"📝 Qabul qildim ({target}). Izohingiz bo'yicha qayta tayyorlab, "
+                    "taxminan 1 soat ichida yangi variantni yuboraman.")
 
 
 def send_status(state, chat_id):
@@ -246,7 +274,7 @@ def send_new_for_review(state):
         version = post.get("version", 1)
         if info.get("status") in ("review", "approved", "published") and info.get("version") == version:
             continue
-        if info.get("status") == "rejected" and info.get("version") == version:
+        if info.get("status") in ("rejected", "needs_rework") and info.get("version") == version:
             continue  # yangi versiya kelishini kutamiz
         when = post.get("scheduled_at", "")
         head = (f"🆕 Tasdiqlash uchun: {post_id}\n"
@@ -256,12 +284,36 @@ def send_new_for_review(state):
             state["posts"][post_id] = {"status": "review", "version": version, "scheduled_at": when,
                                        "platform": post.get("platform"), "review_message_id": mid,
                                        "feedback": info.get("feedback", [])}
+            if version > 1:
+                tg("sendMessage", chat_id=admin, text=f"🔁 Bu {post_id} ning {version}-varianti (izohingiz bo'yicha).")
         except Exception as e:  # noqa: BLE001
             state["posts"][post_id] = {**info, "status": "error", "error": str(e), "version": version}
             tg("sendMessage", chat_id=admin, text=f"⚠️ {post_id} ni yuborishda xato: {e}")
 
 
 # ---------- 3. vaqti kelgan postlarni chiqarish ----------
+
+def remind_pending(state):
+    """Tasdiqlanmagan postlar: vaqtidan 1 soat oldin eslatma, vaqti o'tsa xabar. Bunday post chiqmaydi."""
+    admin = admin_id(state)
+    if not admin:
+        return
+    for post_id, info in state["posts"].items():
+        if info.get("status") not in ("review", "rejected", "needs_rework") or not info.get("scheduled_at"):
+            continue
+        when = dt.datetime.fromisoformat(info["scheduled_at"]).replace(tzinfo=TZ)
+        left = (when - now()).total_seconds() / 60
+        if 0 < left <= 60 and not info.get("reminded"):
+            info["reminded"] = True
+            tg("sendMessage", chat_id=admin,
+               text=f"⏰ {post_id} {int(left)} daqiqadan keyin chiqishi kerak, lekin hali tasdiqlanmagan. "
+                    "Tasdiqlamasangiz, chiqmaydi.")
+        elif left <= 0 and not info.get("missed_notice"):
+            info["missed_notice"] = True
+            tg("sendMessage", chat_id=admin,
+               text=f"⌛ {post_id} vaqtida chiqmadi — tasdiqlanmagan edi. "
+                    "Tasdiqlasangiz, darhol chiqadi.")
+
 
 def publish_due(state):
     admin = admin_id(state)
@@ -306,7 +358,7 @@ def main():
         sys.exit(0)
     state = load_state()
     try:
-        for step in (handle_updates, send_new_for_review, publish_due):
+        for step in (handle_updates, send_new_for_review, remind_pending, publish_due):
             try:
                 step(state)
             except Exception as e:  # noqa: BLE001
