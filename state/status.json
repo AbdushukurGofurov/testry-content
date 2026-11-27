@@ -3,9 +3,12 @@
   "admin_chat_id": 6121307128,
   "posts": {
     "2026-11-28_0900_tg": {
-      "status": "error",
-      "error": "('Connection aborted.', TimeoutError('The write operation timed out'))",
-      "version": 1
+      "status": "review",
+      "version": 1,
+      "scheduled_at": "2026-11-28T09:00",
+      "platform": "telegram",
+      "review_message_id": 9,
+      "feedback": []
     },
     "2026-11-28_1900_tg": {
       "status": "review",
@@ -16,9 +19,12 @@
       "feedback": []
     },
     "2026-11-28_1930_ig": {
-      "status": "error",
-      "error": "('Connection aborted.', TimeoutError('The write operation timed out'))",
-      "version": 1
+      "status": "review",
+      "version": 1,
+      "scheduled_at": "2026-11-28T19:30",
+      "platform": "instagram",
+      "review_message_id": 16,
+      "feedback": []
     }
   }
 }
