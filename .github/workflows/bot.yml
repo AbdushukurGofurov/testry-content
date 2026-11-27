@@ -1,0 +1,39 @@
+name: Testry kontent boti
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"   # har 10 daqiqada
+  workflow_dispatch: {}        # qo'lda ishga tushirish
+  push:
+    paths: ["queue/**"]        # yangi post kelganda darhol
+
+permissions:
+  contents: write
+
+concurrency:
+  group: testry-bot
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q -r bot/requirements.txt
+      - name: Botni ishga tushirish
+        env:
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          ADMIN_CHAT_ID: ${{ secrets.ADMIN_CHAT_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+        run: python bot/bot.py
+      - name: Holatni saqlash
+        run: |
+          git config user.name "testry-bot"
+          git config user.email "bot@testry.uz"
+          git add state/
+          git diff --cached --quiet || (git commit -m "Bot holati yangilandi [skip ci]" && git pull --rebase -q && git push -q)
