@@ -38,6 +38,7 @@ CONFIG = json.loads((ROOT / "bot" / "config.json").read_text(encoding="utf-8"))
 TOKEN = os.environ.get("TG_BOT_TOKEN", "").strip()
 API = f"https://api.telegram.org/bot{TOKEN}"
 TZ = dt.timezone(dt.timedelta(hours=5))  # Asia/Tashkent
+REVIEW_HOUR = int(CONFIG.get("review_hour", 7))  # har kuni shu soatda tasdiqlash
 
 STATUS_UZ = {
     "review": "Tasdiqlashda",
@@ -285,6 +286,20 @@ def send_new_for_review(state):
         info = state["posts"].get(post_id, {})
         post = json.loads((folder / "post.json").read_text(encoding="utf-8"))
         version = post.get("version", 1)
+        # Ertalabki tasdiqlash: o'sha kunning postlari faqat soat REVIEW_HOUR dan keyin yuboriladi
+        when_s = post.get("scheduled_at", "")
+        if when_s:
+            day = dt.datetime.fromisoformat(when_s).date()
+            review_from = dt.datetime.combine(day, dt.time(REVIEW_HOUR, 0), tzinfo=TZ)
+            if now() < review_from:
+                continue
+            key = day.isoformat()
+            if key not in state.setdefault("morning_sent", {}):
+                todays = sorted(f.name for f in QUEUE.glob(f"{key}_*") if (f / "post.json").exists())
+                state["morning_sent"][key] = True
+                tg("sendMessage", chat_id=admin,
+                   text=f"☀️ Xayrli tong! Bugungi postlar ({len(todays)} ta) tasdiqlash uchun keladi:\n" +
+                        "\n".join("• " + t for t in todays))
         if info.get("status") in ("review", "approved", "published") and info.get("version") == version:
             continue
         if info.get("status") in ("rejected", "needs_rework") and info.get("version") == version:
