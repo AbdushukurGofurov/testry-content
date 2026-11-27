@@ -23,7 +23,11 @@ def _token():
 
 
 def _uid():
-    return os.environ["IG_USER_ID"].strip()
+    uid = os.environ.get("IG_USER_ID", "").strip()
+    if not uid:
+        cfg = json.loads((ROOT / "bot" / "config.json").read_text(encoding="utf-8"))
+        uid = cfg["instagram_user_id"]
+    return uid
 
 
 def _call(method, path, **params):
