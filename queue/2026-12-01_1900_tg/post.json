@@ -1,0 +1,16 @@
+{
+  "platform": "telegram",
+  "scheduled_at": "2026-12-01T19:00",
+  "type": "poll",
+  "format": "So'rovnoma",
+  "poll": {
+    "question": "Rostini ayting: kasbingizni tanlab bo'ldingizmi?",
+    "options": [
+      "Ha, aniq bilaman",
+      "Bir nechta variant bor",
+      "Hali bilmayman",
+      "Endi o'ylay boshladim"
+    ]
+  },
+  "version": 1
+}
