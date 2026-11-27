@@ -157,10 +157,10 @@ def send_post(chat_id, post, folder, caption_extra="", reply_markup=None):
     return msg["message_id"]
 
 
-def review_keyboard(post_id):
+def review_keyboard(post_id, version=1):
     return {"inline_keyboard": [[
-        {"text": "✅ Tasdiqlash", "callback_data": f"ok:{post_id}"},
-        {"text": "❌ Rad etish", "callback_data": f"no:{post_id}"},
+        {"text": "✅ Tasdiqlash", "callback_data": f"ok:{post_id}:{version}"},
+        {"text": "❌ Rad etish", "callback_data": f"no:{post_id}:{version}"},
     ]]}
 
 
@@ -179,8 +179,19 @@ def handle_updates(state, wait=0):
                 answer_cb(cq["id"], "Ruxsat yo'q")
                 continue
             parts = cq["data"].split(":")
-            action, post_id = parts[0], parts[-1]
+            action = parts[0]
+            if action in ("ok", "no"):
+                post_id = parts[1]
+                pressed_ver = int(parts[2]) if len(parts) > 2 else None
+            else:
+                post_id, pressed_ver = parts[-1], None
             info = state["posts"].setdefault(post_id, {})
+            if pressed_ver is not None and info.get("version") and pressed_ver != info.get("version"):
+                answer_cb(cq["id"], "Bu eski variant. Eng oxirgi variantdagi tugmani bosing.")
+                tg("sendMessage", chat_id=admin,
+                   text=f"ℹ️ {post_id}: siz {pressed_ver}-variantni bosdingiz, hozirgisi — "
+                        f"{info.get('version')}-variant. Eng oxirgi xabardagi tugmani bosing.")
+                continue
             if action == "ok":
                 info["status"] = "approved"
                 info["approved_at"] = now().isoformat(timespec="minutes")
@@ -282,7 +293,7 @@ def send_new_for_review(state):
         head = (f"🆕 Tasdiqlash uchun: {post_id}\n"
                 f"📍 {post.get('platform', '').capitalize()} · {post.get('format', post.get('type'))} · {when.replace('T', ' ')}")
         try:
-            mid = send_post(admin, post, folder, caption_extra=head, reply_markup=review_keyboard(post_id))
+            mid = send_post(admin, post, folder, caption_extra=head, reply_markup=review_keyboard(post_id, version))
             state["posts"][post_id] = {"status": "review", "version": version, "scheduled_at": when,
                                        "platform": post.get("platform"), "review_message_id": mid,
                                        "feedback": info.get("feedback", [])}
