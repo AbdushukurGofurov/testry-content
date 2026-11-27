@@ -20,7 +20,9 @@ import datetime as dt
 import json
 import os
 import pathlib
+import subprocess
 import sys
+import time
 
 import io
 
@@ -164,8 +166,8 @@ def review_keyboard(post_id):
 
 # ---------- 1. yangi xabarlarni o'qish ----------
 
-def handle_updates(state):
-    updates = tg("getUpdates", offset=state.get("offset", 0), timeout=0,
+def handle_updates(state, wait=0):
+    updates = tg("getUpdates", offset=state.get("offset", 0), timeout=wait,
                  allowed_updates=["message", "callback_query"])
     admin = admin_id(state)
     for u in updates:
@@ -352,19 +354,57 @@ def publish_due(state):
                 tg("sendMessage", chat_id=admin, text=f"⚠️ {post_id} ni chiqarishda xato: {e}")
 
 
+def git(*args):
+    return subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True)
+
+
+def sync_state(state):
+    """Holatni saqlab, omborga yozadi; yangi postlarni (queue/) tortib oladi."""
+    save_state(state)
+    git("add", "state")
+    if git("diff", "--cached", "--quiet").returncode != 0:
+        git("commit", "-qm", "Bot holati yangilandi [skip ci]")
+    git("pull", "--rebase", "-q")
+    git("push", "-q")
+
+
+def run_once(state, wait=0):
+    for step in (lambda st: handle_updates(st, wait), send_new_for_review, remind_pending, publish_due):
+        try:
+            step(state)
+        except Exception as e:  # noqa: BLE001
+            print(f"xato: {e}")
+
+
 def main():
     if not TOKEN:
         print("TG_BOT_TOKEN topilmadi — GitHub Secrets'ga qo'shing.")
         sys.exit(0)
+    loop_minutes = float(os.environ.get("LOOP_MINUTES", "0") or 0)
     state = load_state()
-    try:
-        for step in (handle_updates, send_new_for_review, remind_pending, publish_due):
-            try:
-                step(state)
-            except Exception as e:  # noqa: BLE001
-                print(f"{step.__name__}: {e}")
-    finally:
-        save_state(state)
+    if loop_minutes <= 0:
+        try:
+            run_once(state)
+        finally:
+            save_state(state)
+        return
+    # Doimiy rejim: tugmalarga darhol javob, har daqiqada yangi postlarni tekshirish
+    end = time.time() + loop_minutes * 60
+    last_sync = 0
+    while time.time() < end:
+        before = json.dumps(state, sort_keys=True)
+        try:
+            handle_updates(state, wait=25)
+        except Exception as e:  # noqa: BLE001
+            print(f"updates: {e}")
+            time.sleep(5)
+        changed = json.dumps(state, sort_keys=True) != before
+        if changed or time.time() - last_sync > 60:
+            git("pull", "--rebase", "-q")
+            run_once(state)
+            sync_state(state)
+            last_sync = time.time()
+    sync_state(state)
 
 
 if __name__ == "__main__":

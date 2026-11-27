@@ -85,6 +85,10 @@ Katta va'da bermaymiz — test kasbni "topib bermaydi", u tanlovga yordam beradi
   Maktab o'quvchisi uchun sodda, abituriyent uchun aniq (yo'nalish, oliygoh, topshirish).
 - **Lug'at:** Testry, Testry.uz, @testryuz_bot (test boti), Yong'oqvoy. Afzal so'zlar:
   qiziqish, yo'nalish, kasb, natija, birinchi qadam. 1–3 emoji, faqat ma'no uchun.
+- **So'z tanlash:** 9–11-sinf o'quvchilari va abituriyentlar kundalik ishlatadigan zamonaviy,
+  tirik so'zlarni tanlang; eskirgan, rasmiy yoki "kattalar" so'zlaridan qoching. Ota-onalarga
+  ham tushunarli bo'lsin. Masalan: "moda" emas → **"trend"** ("hozir trendda"); "ixtisoslik" emas →
+  "yo'nalish"; "mehnat faoliyati" emas → "ish". Slang va ruscha-o'zbekcha aralash so'zlar yo'q.
 - **Mahsulot faktlari:** 30 ta savollik qiziqishlar testi, xalqaro RIASEC metodikasi asosida,
   o'zbek va rus tillarida; natija: qiziqishlarga yaqin 3 ta yo'nalish (tavsiya), oliygohlar, birinchi qadamlar;
   qisqa natija bepul, to'liq hisobot pullik. Boshqa da'vo qilmang.

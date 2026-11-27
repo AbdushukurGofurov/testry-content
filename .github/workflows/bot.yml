@@ -1,14 +1,17 @@
 name: Testry kontent boti
 
+# Bot har ishga tushganda ~25 daqiqa davomida tugmalarga darhol javob beradi,
+# so'ng keyingi ishga tushirishni o'zi chaqiradi (uzluksiz zanjir).
+# Jadval (cron) — zanjir uzilib qolsa, qayta ulash uchun zaxira.
+
 on:
   schedule:
-    - cron: "*/10 * * * *"   # har 10 daqiqada
-  workflow_dispatch: {}        # qo'lda ishga tushirish
-  push:
-    paths: ["queue/**"]        # yangi post kelganda darhol
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: testry-bot
@@ -17,23 +20,27 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - run: pip install -q -r bot/requirements.txt
-      - name: Botni ishga tushirish
+      - name: Git sozlash
+        run: |
+          git config user.name "testry-bot"
+          git config user.email "bot@testry.uz"
+      - name: Bot (25 daqiqa)
         env:
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           ADMIN_CHAT_ID: ${{ secrets.ADMIN_CHAT_ID }}
           IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
           IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          LOOP_MINUTES: "25"
         run: python bot/bot.py
-      - name: Holatni saqlash
-        run: |
-          git config user.name "testry-bot"
-          git config user.email "bot@testry.uz"
-          mkdir -p state && git add -A state
-          git diff --cached --quiet || (git commit -m "Bot holati yangilandi [skip ci]" && git pull --rebase -q && git push -q)
+      - name: Keyingi ishga tushirish
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run bot.yml --ref main || true
