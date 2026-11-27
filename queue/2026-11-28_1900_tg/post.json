@@ -4,13 +4,13 @@
   "type": "poll",
   "format": "So'rovnoma",
   "poll": {
-    "question": "Rostini ayting: kasbingizni tanlab bo'ldingizmi?",
+    "question": "Siz yo'nalishingizni nimaga qarab tanladingiz (yoki tanlayapsiz)?",
     "options": [
-      "Ha, aniq bilaman",
-      "Bir nechta variant bor",
-      "Hali bilmayman",
-      "Endi o'ylay boshladim"
+      "O'z qiziqishimga qarab",
+      "Ota-onam maslahati bilan",
+      "Nufuzi va maoshiga qarab",
+      "Hali bilmayman"
     ]
   },
-  "version": 1
+  "version": 2
 }

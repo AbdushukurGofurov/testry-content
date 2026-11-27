@@ -53,10 +53,24 @@ Hech qachon qayta chizilmaydi, rangi o'zgartirilmaydi.
 chizib, ffmpeg bilan har biriga 4–6 s, yumshoq zoom va o'tish bilan mp4 qiling
 (`-c:v libx264 -preset veryfast -crf 20 -pix_fmt yuv420p`). Ovoz kerak emas.
 
-## Birinchi postlar: bot tanishuvi (28-noyabr – 30-noyabr)
-Ishga tushirish davrida asosiy urg'u — **@testryuz_bot** ni tanishtirish: u nima, qanday ishlaydi
-(botni oching → 30 ta savolga javob bering → natija), natijada nima beradi. Har bir postda botga
-havola bo'lsin. Keyingi kunlarda ham haftada kamida 2 marta botga chaqiruv bo'lsin.
+## Birinchi postlar: progrev (28–30-noyabr)
+Mahsulotni darhol taklif qilmaymiz. Avval og'riq, keyin sabab, keyin yechim:
+1. **28-noyabr — og'riq:** HeadHunter Uzbekistan so'rovi: ishtirokchilarning atigi uchdan biri diplomi
+   bo'yicha ishlaydi, 78% imkon bo'lsa boshqa mutaxassislikni tanlardi. Mahsulot reklamasi yo'q.
+2. **29-noyabr — sabab:** yo'nalish qiziqishni hisobga olmay tanlanadi; 6 qiziqish turi qisqacha.
+3. **30-noyabr — yechim:** @testryuz_bot — qiziqishlarni aniqlab, yo'nalish tanlashga yordam beradi.
+Keyingi kunlarda haftada kamida 2 marta botga chaqiruv bo'lsin.
+
+## Va'da va kutuvlar (MUHIM)
+Katta va'da bermaymiz — test kasbni "topib bermaydi", u tanlovga yordam beradi. Qaror foydalanuvchida.
+- **Ishlatmang:** "kasbingizni toping", "kasbingizni aniqlang", "sizga mos kasbni topamiz",
+  "to'g'ri kasbni ko'rsatamiz", "kelajagingizni hal qiling".
+- **Ishlating:** "qiziqishlaringizni aniqlang", "yo'nalish tanlashga yordam beradi",
+  "qaysi yo'nalishlarni o'rganishga arziydi — shuni ko'rsatadi", "tanlovda kompas",
+  "qarorni siz qabul qilasiz", "birinchi qadam".
+- Natija haqida: "qiziqishlaringizga yaqin 3 ta yo'nalish — tavsiya sifatida", "o'rganish uchun
+  boshlang'ich nuqta". Test natijasini hukm yoki kafolat sifatida ko'rsatmang.
+- Imzo: `<i>Testry — o'zingizni biling, ongli tanlang.</i>`
 
 ## Kontent standarti (qisqa)
 
@@ -72,7 +86,7 @@ havola bo'lsin. Keyingi kunlarda ham haftada kamida 2 marta botga chaqiruv bo'ls
 - **Lug'at:** Testry, Testry.uz, @testryuz_bot (test boti), Yong'oqvoy. Afzal so'zlar:
   qiziqish, yo'nalish, kasb, natija, birinchi qadam. 1–3 emoji, faqat ma'no uchun.
 - **Mahsulot faktlari:** 30 ta savollik qiziqishlar testi, xalqaro RIASEC metodikasi asosida,
-  o'zbek va rus tillarida; natija: mos 3 kasb yo'nalishi, oliygohlar, birinchi qadamlar;
+  o'zbek va rus tillarida; natija: qiziqishlarga yaqin 3 ta yo'nalish (tavsiya), oliygohlar, birinchi qadamlar;
   qisqa natija bepul, to'liq hisobot pullik. Boshqa da'vo qilmang.
 - **RIASEC turlari (o'zbekcha):** Realistik, Tadqiqotchi, San'atkor, Ijtimoiy, Tadbirkor, Tartibli.
 
@@ -80,7 +94,7 @@ havola bo'lsin. Keyingi kunlarda ham haftada kamida 2 marta botga chaqiruv bo'ls
 
 - **Telegram post:** Ilmoq (1 qator, savol yoki fakt, `<b>` bilan) → muammo/kontekst (2–3 qator)
   → qiymat (3 band, "—" bilan) → bitta harakatga chaqiruv → imzo
-  `<i>Testry — o'zingizni biling, kasbingizni toping.</i>`. 500–900 belgi. Rasm: `size: "tg"`,
+  `<i>Testry — o'zingizni biling, ongli tanlang.</i>`. 500–900 belgi. Rasm: `size: "tg"`,
   bitta slayd, sarlavha = ilmoq.
 - **Telegram so'rovnoma:** `type: "poll"`, savol rejadagi "Ilmoq", 3–4 variant. Viktorinada
   savol + 3–4 variant; javob ertasi kungi postda.
