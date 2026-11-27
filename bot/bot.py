@@ -276,7 +276,14 @@ def publish_due(state):
         try:
             if post.get("platform") == "instagram":
                 if not os.environ.get("IG_ACCESS_TOKEN"):
-                    info["status"] = "waiting_instagram"
+                    # Instagram ulanmagan: tayyor postni adminga yuboramiz, o'zi joylaydi
+                    if admin:
+                        send_post(admin, {**post, "text": ""}, folder,
+                                  caption_extra="📲 Instagram uchun tayyor: rasmlarni saqlab, karusel qilib joylang. Matn keyingi xabarda.")
+                        tg("sendMessage", chat_id=admin, text=post.get("text", ""))
+                    info["status"] = "published"
+                    info["published_at"] = now().isoformat(timespec="minutes")
+                    info["manual"] = True
                     continue
                 import instagram  # noqa: PLC0415
                 instagram.publish(post, folder)
