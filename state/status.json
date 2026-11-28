@@ -1,5 +1,5 @@
 {
-  "offset": 675093914,
+  "offset": 675093915,
   "admin_chat_id": 6121307128,
   "posts": {
     "2026-11-28_0900_tg": {
@@ -13,13 +13,14 @@
       "published_at": "2026-11-28T09:00+05:00"
     },
     "2026-11-28_1900_tg": {
-      "status": "review",
+      "status": "approved",
       "version": 2,
       "scheduled_at": "2026-11-28T19:00",
       "platform": "telegram",
       "review_message_id": 30,
       "feedback": [],
-      "reminded": true
+      "reminded": true,
+      "approved_at": "2026-11-28T18:18+05:00"
     },
     "2026-11-28_1930_ig": {
       "status": "approved",
