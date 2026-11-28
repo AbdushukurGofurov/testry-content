@@ -18,7 +18,8 @@
       "scheduled_at": "2026-11-28T19:00",
       "platform": "telegram",
       "review_message_id": 30,
-      "feedback": []
+      "feedback": [],
+      "reminded": true
     },
     "2026-11-28_1930_ig": {
       "status": "approved",
